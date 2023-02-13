@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WeatherForecastAPI.Models;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.OpenApi.Services;
-using System.Linq.Expressions;
+using WeatherForecastAPI.Classes;
+
+
 
 namespace WeatherForecastAPI.Controllers
 {
@@ -14,29 +10,34 @@ namespace WeatherForecastAPI.Controllers
     [ApiController]
     public class WeatherForecastController : ControllerBase
     {
-        
+
         [HttpPost("[action]/")]
-        public async Task<IActionResult> CityForecast([FromBody] List<string> cities)
+        public async Task<IActionResult> CityForecast([FromBody] List<string> cities, string login, string password)
         {
             using (var client = new HttpClient())
             {
+                LoginCredentials loginCheck = new LoginCredentials();
+                if (!loginCheck.IsLoginValid(login, password))
+                {
+                    return Unauthorized();
+                }
                 try
                 {
                     client.BaseAddress = new Uri("http://api.openweathermap.org");
                     var forecasts = new List<object>();
                     foreach (var city in cities)
                     {
-                        var response = await client.GetAsync($"/data/2.5/weather?q={city}&appid=285737d14e60b6ddc096f14a48c427d1&units=metric");
+                        var response = await client.GetAsync($"/data/2.5/weather?q={city}&appid={ApiKey.Key}&units=metric");
                         response.EnsureSuccessStatusCode();
 
                         var stringResult = await response.Content.ReadAsStringAsync();
                         var rawWeather = JsonConvert.DeserializeObject<OpenWeatherResponse>(stringResult);
                         forecasts.Add(new
                         {
-                            City = rawWeather.Name,
-                            Temp = rawWeather.Main.Temp,
-                            Pressure = rawWeather.Main.Pressure,
-                            WindSpeed = rawWeather.Wind.Speed
+                            City = rawWeather.name,
+                            Temp = rawWeather.main.temp,
+                            Pressure = rawWeather.main.pressure,
+                            WindSpeed = rawWeather.wind.speed
                         });
                     }
 
@@ -52,24 +53,24 @@ namespace WeatherForecastAPI.Controllers
 
         public class OpenWeatherResponse
         {
-            public string Name { get; set; }
+            public string name { get; set; }
 
-            public Main Main { get; set; }
+            public Main main { get; set; }
 
-            public Wind Wind { get; set; }
+            public Wind wind { get; set; }
         }
 
 
         public class Wind
         {
-            public string Speed { get; set; } 
+            public string speed { get; set; }
         }
 
         public class Main
         {
-            public string Temp { get; set; }
+            public string temp { get; set; }
 
-            public string Pressure { get; set; }
+            public string pressure { get; set; }
 
         }
     }

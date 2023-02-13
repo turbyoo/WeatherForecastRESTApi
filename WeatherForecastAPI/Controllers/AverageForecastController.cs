@@ -1,13 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using WeatherForecastAPI.Models;
-using System.Net.Http;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.OpenApi.Services;
-using System.Security.AccessControl;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using System.Drawing;
+using WeatherForecastAPI.Classes;
 
 namespace WeatherForecastAPI.Controllers
 {
@@ -15,16 +8,23 @@ namespace WeatherForecastAPI.Controllers
     [ApiController]
     public class AverageForecastController : ControllerBase
     {
+
         [HttpGet("[action]/")]
-        public async Task<IActionResult> ThreeDaysAverageForecast(string city)
+        public async Task<IActionResult> ThreeDaysAverageForecast(string city, string login, string password)
         {
             using (var client = new HttpClient())
             {
+                LoginCredentials loginCheck = new LoginCredentials();
+                if (!loginCheck.IsLoginValid(login, password))
+                {
+                    return Unauthorized();
+                }
+
                 try
                 {
                     client.BaseAddress = new Uri("http://api.openweathermap.org");
 
-                    var citySearchResponse = await client.GetAsync($"/data/2.5/weather?q={city}&appid=285737d14e60b6ddc096f14a48c427d1");
+                    var citySearchResponse = await client.GetAsync($"/data/2.5/weather?q={city}&appid={ApiKey.Key}");
                     citySearchResponse.EnsureSuccessStatusCode();
 
                     var citySearchStringResult = await citySearchResponse.Content.ReadAsStringAsync();
@@ -37,19 +37,24 @@ namespace WeatherForecastAPI.Controllers
                     int currentTimestamp = (int)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                     int threeDaysAgoTimestamp = currentTimestamp - (3 * 24 * 60 * 60);
 
-                    var response = await client.GetAsync($"/data/2.5/onecall?lat={lat}&lon={lon}&start={threeDaysAgoTimestamp}&end={currentTimestamp}&appid=285737d14e60b6ddc096f14a48c427d1");
+                    var response = await client.GetAsync($"/data/2.5/onecall?lat={lat}&lon={lon}&start={threeDaysAgoTimestamp}&end={currentTimestamp}&appid={ApiKey.Key}");
                     response.EnsureSuccessStatusCode();
 
                     var stringResult = await response.Content.ReadAsStringAsync();
+
+
                     var rawWeather = JsonConvert.DeserializeObject<OpenWeatherResponse>(stringResult);
 
-                    // Calculate the average temperature
-                    double avgTemp = Math.Round(rawWeather.daily.Take(3).Average(d => d.temp.day)/(24*3),2);
+                    double avgTemp = Math.Round(rawWeather.daily.Take(3).Average(d => d.temp.day) / (24 * 3), 2);
+                    var avgPressure = Math.Round(rawWeather.daily.Take(3).Average(d => d.pressure), 0);
+                    var avgWindSpeed = Math.Round(rawWeather.daily.Take(3).Average(d => d.wind_speed), 0);
 
-                    string avgTempToString = avgTemp.ToString();
-
-                    // Return the average temperature as a JSON object
-                    return Ok(new { temp = avgTempToString });
+                    return Ok(new
+                    {
+                        Temp = avgTemp.ToString(),
+                        Pressure = avgPressure.ToString(),
+                        WindSpeed = avgWindSpeed.ToString()
+                    });
                 }
                 catch (HttpRequestException httpRequestException)
                 {
@@ -57,16 +62,23 @@ namespace WeatherForecastAPI.Controllers
                 }
             }
         }
-
     }
+
     public class OpenWeatherResponse
     {
         public Daily[] daily { get; set; }
 
     }
+
     public class CitySearchResult
     {
         public Coord coord { get; set; }
+    }
+
+    public class Main
+    {
+        public string temp { get; set; }
+
     }
 
     public class Coord
@@ -78,6 +90,10 @@ namespace WeatherForecastAPI.Controllers
     public class Daily
     {
         public Temp temp { get; set; }
+
+        public double pressure { get; set; }
+
+        public double wind_speed { get; set; }
     }
 
     public class Temp
