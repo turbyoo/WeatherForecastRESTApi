@@ -4,7 +4,8 @@ using WeatherForecastAPI.Classes;
 
 namespace WeatherForecastAPI.Controllers
 {
-
+    [Route("api/WeatherForecastAPI")]
+    [ApiController]
     public class WeatherDataController : ControllerBase
     {
         private readonly string jsonPath = "WeatherData.json";
