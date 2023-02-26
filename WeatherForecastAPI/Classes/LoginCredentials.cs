@@ -2,8 +2,8 @@
 {
     public class LoginCredentials
     {
-        public static string login = "opennet";
-        public static string password = "1234";
+        private const string login = "opennet";
+        private const string password = "1234";
 
         public bool IsLoginValid(string login, string password)
         {
