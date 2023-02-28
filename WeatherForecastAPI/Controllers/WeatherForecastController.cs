@@ -11,8 +11,8 @@ namespace WeatherForecastAPI.Controllers
     public class WeatherForecastController : ControllerBase
     {
 
-        [HttpPost("[action]/")]
-        public async Task<IActionResult> CityForecast([FromBody] List<string> cities, string login, string password)
+        [HttpGet("[action]/")]
+        public async Task<IActionResult> CityForecast(string cities, string login, string password)
         {
             using (var client = new HttpClient())
             {
@@ -24,21 +24,23 @@ namespace WeatherForecastAPI.Controllers
                 try
                 {
                     client.BaseAddress = new Uri("http://api.openweathermap.org");
-                    var forecasts = new List<object>();
-                    foreach (var city in cities)
+                    var forecasts = new List<CityWeatherForecast>();
+                    foreach (var city in cities.Split(","))
                     {
                         var response = await client.GetAsync($"/data/2.5/weather?q={city}&appid={ApiKey.Key}&units=metric");
                         response.EnsureSuccessStatusCode();
 
                         var stringResult = await response.Content.ReadAsStringAsync();
                         var rawWeather = JsonConvert.DeserializeObject<OpenWeatherResponse>(stringResult);
-                        forecasts.Add(new
+                        //Created forecasts list CityWeatherForecast type, then created object cityWeather for each city and added it to the list. (instead of using anonymous types (anonymous object))
+                        var cityWeather = new CityWeatherForecast
                         {
                             City = rawWeather.name,
-                            Temp = rawWeather.main.temp,
+                            Temperature = rawWeather.main.temp,
                             Pressure = rawWeather.main.pressure,
                             WindSpeed = rawWeather.wind.speed
-                        });
+                        };
+                        forecasts.Add(cityWeather);
                     }
 
                     return Ok(forecasts);
@@ -63,15 +65,16 @@ namespace WeatherForecastAPI.Controllers
 
         public class Wind
         {
-            public string speed { get; set; }
+            public double speed { get; set; }
         }
 
         public class Main
         {
-            public string temp { get; set; }
+            public double temp { get; set; }
 
-            public string pressure { get; set; }
+            public double pressure { get; set; }
 
         }
+
     }
 }
