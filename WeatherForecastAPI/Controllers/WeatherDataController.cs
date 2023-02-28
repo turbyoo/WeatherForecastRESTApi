@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using WeatherForecastAPI.Classes;
 
+
 namespace WeatherForecastAPI.Controllers
 {
     [Route("api/WeatherForecastAPI")]
@@ -14,6 +15,9 @@ namespace WeatherForecastAPI.Controllers
         [HttpPost("[action]/")]
         public async Task<IActionResult> InsertWeatherInfo([FromBody] WeatherData weatherData, string login, string password)
         {
+            //Logika do service 
+            //
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -59,13 +63,17 @@ namespace WeatherForecastAPI.Controllers
             }
         }
 
-
-
         [HttpGet("[action]/")]
-        public IActionResult GetWeatherInfo(string city, string date)
+        public IActionResult GetWeatherInfo(string city, DateTime date, string login, string password)
         {
             try
             {
+                LoginCredentials loginCheck = new LoginCredentials();
+                if (!loginCheck.IsLoginValid(login, password))
+                {
+                    return Unauthorized();
+                }
+
                 if (System.IO.File.Exists(jsonPath))
                 {
                     string jsonData = System.IO.File.ReadAllText(jsonPath);
@@ -96,10 +104,10 @@ namespace WeatherForecastAPI.Controllers
         public class WeatherData
         {
             public string City { get; set; }
-            public string Date { get; set; }
-            public string Temperature { get; set; }
-            public string Pressure { get; set; }
-            public string WindSpeed { get; set; }
+            public DateTime Date { get; set; }
+            public double Temperature { get; set; }
+            public double Pressure { get; set; }
+            public double WindSpeed { get; set; }
         }
     }
 
