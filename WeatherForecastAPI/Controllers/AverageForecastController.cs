@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using WeatherForecastAPI.Classes;
+//using PostDataAnnotations;
 
 namespace WeatherForecastAPI.Controllers
 {
@@ -49,12 +50,14 @@ namespace WeatherForecastAPI.Controllers
                     var avgPressure = Math.Round(rawWeather.daily.Take(3).Average(d => d.pressure), 0);
                     var avgWindSpeed = Math.Round(rawWeather.daily.Take(3).Average(d => d.wind_speed), 0);
 
-                    return Ok(new
+                    var averageWeather = new AverageWeatherForecast
                     {
-                        Temp = avgTemp.ToString(),
-                        Pressure = avgPressure.ToString(),
-                        WindSpeed = avgWindSpeed.ToString()
-                    });
+                        Temp = avgTemp,
+                        Pressure = avgPressure,
+                        WindSpeed = avgWindSpeed
+                    };
+
+                    return Ok(averageWeather);
                 }
                 catch (HttpRequestException httpRequestException)
                 {
@@ -77,7 +80,7 @@ namespace WeatherForecastAPI.Controllers
 
     public class Main
     {
-        public string temp { get; set; }
+        public double temp { get; set; }
 
     }
 
