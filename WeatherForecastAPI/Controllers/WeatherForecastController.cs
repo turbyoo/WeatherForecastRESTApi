@@ -4,7 +4,9 @@ using WeatherForecastAPI.Classes;
 
 
 
-namespace WeatherForecastAPI.Controllers
+
+
+namespace WeatherForecastAPI.Controllers.WeatherForecastController
 {
     [Route("api/WeatherForecastAPI")]
     [ApiController]
@@ -50,30 +52,6 @@ namespace WeatherForecastAPI.Controllers
                     return BadRequest($"Error getting weather from OpenWeather: {httpRequestException.Message}");
                 }
             }
-        }
-
-
-        public class OpenWeatherResponse
-        {
-            public string name { get; set; }
-
-            public Main main { get; set; }
-
-            public Wind wind { get; set; }
-        }
-
-
-        public class Wind
-        {
-            public double speed { get; set; }
-        }
-
-        public class Main
-        {
-            public double temp { get; set; }
-
-            public double pressure { get; set; }
-
         }
 
     }

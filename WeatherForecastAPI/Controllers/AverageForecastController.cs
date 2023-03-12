@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using WeatherForecastAPI.Classes;
 //using PostDataAnnotations;
 
-namespace WeatherForecastAPI.Controllers
+namespace WeatherForecastAPI.Controllers.AverageForecastController
 {
     [Route("api/WeatherForecastAPI")]
     [ApiController]
@@ -66,42 +66,4 @@ namespace WeatherForecastAPI.Controllers
             }
         }
     }
-
-    public class OpenWeatherResponse
-    {
-        public Daily[] daily { get; set; }
-
-    }
-
-    public class CitySearchResult
-    {
-        public Coord coord { get; set; }
-    }
-
-    public class Main
-    {
-        public double temp { get; set; }
-
-    }
-
-    public class Coord
-    {
-        public double lat { get; set; }
-        public double lon { get; set; }
-    }
-
-    public class Daily
-    {
-        public Temp temp { get; set; }
-
-        public double pressure { get; set; }
-
-        public double wind_speed { get; set; }
-    }
-
-    public class Temp
-    {
-        public double day { get; set; }
-    }
-
 }

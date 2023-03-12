@@ -1,4 +1,4 @@
-﻿namespace WeatherForecastAPI.Classes
+﻿namespace WeatherForecastAPI.Controllers.WeatherForecastController
 {
     public class CityWeatherForecast
     {
